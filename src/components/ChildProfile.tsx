@@ -23,9 +23,10 @@ function calculateAge(birthDate: string): string {
 function getNextBirthdayLabel(birthDate: string): string {
   const birth = new Date(birthDate + 'T00:00:00');
   const now = new Date();
+  now.setHours(0, 0, 0, 0);
   const next = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
   if (next < now) next.setFullYear(now.getFullYear() + 1);
-  const diff = Math.ceil((next.getTime() - now.getTime()) / 86400000);
+  const diff = Math.round((next.getTime() - now.getTime()) / 86400000);
   if (diff === 0) return 'Hoje é aniversário!';
   if (diff === 1) return 'Amanhã é aniversário!';
   if (diff <= 30) return `Aniversário em ${diff} dias`;

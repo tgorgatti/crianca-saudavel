@@ -150,7 +150,6 @@ export default function MedicalAgenda() {
       )}
 
       {(() => {
-        const todayStr = new Date().toISOString().split('T')[0];
         const upcoming = childApts
           .filter((a) => a.date >= todayStr)
           .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))

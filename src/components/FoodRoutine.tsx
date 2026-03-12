@@ -178,7 +178,7 @@ export default function FoodRoutine() {
                   })}
                 </h3>
                 <span className="text-[11px] font-semibold bg-pink-50 text-pink-500 px-2 py-0.5 rounded-full border border-pink-100">
-                  {dayEntries.length} refeição{dayEntries.length !== 1 ? 'ões' : ''}
+                  {dayEntries.length} {dayEntries.length !== 1 ? 'refeições' : 'refeição'}
                 </span>
               </div>
               <div className="space-y-2">
