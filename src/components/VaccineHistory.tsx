@@ -106,7 +106,7 @@ export default function VaccineHistory() {
       </div>
 
       {allVaccines.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="card flex items-center gap-3 p-4">
             <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
               <CheckCircle size={20} className="text-emerald-500" />
@@ -125,6 +125,24 @@ export default function VaccineHistory() {
               <p className="text-xs text-gray-500">Pendentes</p>
             </div>
           </div>
+        </div>
+      )}
+      {allVaccines.length > 0 && (
+        <div className="card mb-5 p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-semibold text-gray-700">Progresso de vacinação</span>
+            <span className="text-sm font-bold text-emerald-600">{Math.round((appliedCount / allVaccines.length) * 100)}%</span>
+          </div>
+          <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${(appliedCount / allVaccines.length) * 100}%`,
+                background: 'linear-gradient(90deg, #34d399, #10b981)',
+              }}
+            />
+          </div>
+          <p className="text-xs text-gray-400 mt-1.5">{appliedCount} de {allVaccines.length} vacinas aplicadas</p>
         </div>
       )}
 

@@ -133,6 +133,34 @@ export default function GrowthCurve() {
           <p className="text-sm">Nenhuma medição registrada</p>
         </div>
       ) : (
+        <>
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          {(() => {
+            const lastWeight = [...records].filter(r => r.weight !== null).pop();
+            const lastHeight = [...records].filter(r => r.height !== null).pop();
+            return (
+              <>
+                <div className="card stat-mini">
+                  <p className="label text-center mb-1">Último Peso</p>
+                  {lastWeight ? (
+                    <><p className="text-2xl font-bold text-pink-600">{lastWeight.weight}</p><p className="text-xs text-gray-400">kg</p></>
+                  ) : <p className="text-lg text-gray-300">—</p>}
+                </div>
+                <div className="card stat-mini">
+                  <p className="label text-center mb-1">Última Altura</p>
+                  {lastHeight ? (
+                    <><p className="text-2xl font-bold text-violet-600">{lastHeight.height}</p><p className="text-xs text-gray-400">cm</p></>
+                  ) : <p className="text-lg text-gray-300">—</p>}
+                </div>
+                <div className="card stat-mini">
+                  <p className="label text-center mb-1">Medições</p>
+                  <p className="text-2xl font-bold text-gray-700">{records.length}</p>
+                  <p className="text-xs text-gray-400">registros</p>
+                </div>
+              </>
+            );
+          })()}
+        </div>
         <div className="space-y-5">
           {weightData.length > 0 && (
             <div className="card">
@@ -265,6 +293,7 @@ export default function GrowthCurve() {
             </div>
           </div>
         </div>
+        </>
       )}
     </div>
   );

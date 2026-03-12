@@ -149,6 +149,38 @@ export default function MedicalAgenda() {
         </div>
       )}
 
+      {(() => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const upcoming = childApts
+          .filter((a) => a.date >= todayStr)
+          .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+          .slice(0, 3);
+        if (upcoming.length === 0) return null;
+        return (
+          <div className="card mb-5 p-4">
+            <h3 className="font-semibold text-gray-700 mb-3 text-sm">Próximas consultas</h3>
+            <div className="space-y-2">
+              {upcoming.map((apt) => (
+                <div key={apt.id} className="flex items-center gap-3 p-2.5 bg-pink-50 rounded-xl border border-pink-100">
+                  <div className="w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 bg-white border border-pink-100">
+                    <span className="text-[9px] text-pink-500 font-bold uppercase leading-tight">
+                      {new Date(apt.date + 'T00:00:00').toLocaleDateString('pt-BR', { month: 'short' })}
+                    </span>
+                    <span className="text-sm font-bold text-pink-600 leading-tight">
+                      {new Date(apt.date + 'T00:00:00').getDate()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-800 truncate">{apt.location}</p>
+                    <p className="text-xs text-gray-400">{apt.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       <div className="card mb-5">
         <div className="flex items-center justify-between mb-4">
           <button

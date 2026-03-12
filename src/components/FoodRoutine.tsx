@@ -168,14 +168,19 @@ export default function FoodRoutine() {
         <div className="space-y-4">
           {grouped.map(([date, dayEntries]) => (
             <div key={date} className="card">
-              <h3 className="font-semibold text-gray-700 mb-3 text-sm">
-                {new Date(date + 'T00:00:00').toLocaleDateString('pt-BR', {
-                  weekday: 'long',
-                  day: '2-digit',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-gray-700 text-sm capitalize">
+                  {new Date(date + 'T00:00:00').toLocaleDateString('pt-BR', {
+                    weekday: 'long',
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </h3>
+                <span className="text-[11px] font-semibold bg-pink-50 text-pink-500 px-2 py-0.5 rounded-full border border-pink-100">
+                  {dayEntries.length} refeição{dayEntries.length !== 1 ? 'ões' : ''}
+                </span>
+              </div>
               <div className="space-y-2">
                 {dayEntries
                   .sort((a, b) => MEAL_TYPES.indexOf(a.mealType) - MEAL_TYPES.indexOf(b.mealType))

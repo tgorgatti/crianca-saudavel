@@ -23,8 +23,8 @@ function MainContent() {
   };
 
   return (
-    <main className="flex-1 overflow-y-auto min-h-screen">
-      <div className="max-w-5xl mx-auto px-4 py-6 md:px-8 md:py-8 mt-10 md:mt-0">
+    <main className="flex-1 overflow-y-auto">
+      <div key={activeSection} className="max-w-5xl mx-auto px-4 py-6 md:px-8 md:py-8 mt-14 md:mt-0 page-enter">
         {sections[activeSection] ?? <ChildProfile />}
       </div>
     </main>
@@ -33,7 +33,7 @@ function MainContent() {
 
 export default function App() {
   return (
-    <div className="flex h-screen overflow-hidden bg-rose-50">
+    <div className="flex h-screen overflow-hidden bg-rose-50/70">
       <Sidebar />
       <MainContent />
     </div>

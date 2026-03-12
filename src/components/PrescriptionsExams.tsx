@@ -9,7 +9,7 @@ function FileCard({ file, onClick }: { file: MedicalFile; onClick: () => void })
   return (
     <button
       onClick={onClick}
-      className="card text-left hover:shadow-md transition-shadow cursor-pointer group p-4 w-full"
+      className="card text-left hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer group p-4 w-full"
     >
       <div className="flex items-center justify-center h-28 bg-gray-50 rounded-xl mb-3 overflow-hidden">
         {isImage ? (
@@ -19,9 +19,11 @@ function FileCard({ file, onClick }: { file: MedicalFile; onClick: () => void })
             className="w-full h-full object-cover rounded-xl"
           />
         ) : (
-          <div className="flex flex-col items-center gap-1 text-gray-300">
-            <FileText size={40} />
-            <span className="text-xs">PDF</span>
+          <div className="flex flex-col items-center gap-1.5">
+            <div className="w-12 h-14 bg-red-50 rounded-lg border border-red-100 flex items-center justify-center">
+              <FileText size={28} className="text-red-400" />
+            </div>
+            <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">PDF</span>
           </div>
         )}
       </div>
