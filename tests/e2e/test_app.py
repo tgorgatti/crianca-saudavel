@@ -402,7 +402,7 @@ class TestContatosSaude:
         page.click("button:has-text('Salvar contato')")
         page.wait_for_timeout(600)
 
-        expect(page.locator("a[href='tel:(11) 12345-6789']")).to_be_visible()
+        expect(page.locator("a[href='tel:11123456789']")).to_be_visible()
 
     def test_email_como_link(self, page: Page):
         self.setup(page)
