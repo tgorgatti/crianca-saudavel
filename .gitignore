@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+__pycache__/
+.pytest_cache/
+*.pyc
+test_foo.py
+test_override.py
