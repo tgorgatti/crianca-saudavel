@@ -163,7 +163,7 @@ export default function HealthContacts() {
                 <div className="space-y-1.5">
                   {contact.phone && (
                     <a
-                      href={`tel:${contact.phone}`}
+                      href={`tel:${contact.phone.replace(/[^\d+]/g, '')}`}
                       className="flex items-center gap-2 text-xs text-gray-600 hover:text-violet-600 transition-colors"
                     >
                       <Phone size={12} className="text-gray-400 shrink-0" />
