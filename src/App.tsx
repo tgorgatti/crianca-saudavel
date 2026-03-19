@@ -9,6 +9,49 @@ import FoodRoutine from './components/FoodRoutine';
 import VaccineHistory from './components/VaccineHistory';
 import HealthContacts from './components/HealthContacts';
 
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, ErrorBoundaryState> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('App error:', error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex items-center justify-center h-screen bg-rose-50 p-8">
+          <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+            <div className="text-5xl mb-4">⚠️</div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Algo deu errado</h2>
+            <p className="text-sm text-gray-500 mb-6">
+              {this.state.error?.message ?? 'Erro desconhecido'}
+            </p>
+            <button
+              onClick={() => this.setState({ hasError: false, error: null })}
+              className="btn-primary"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function MainContent() {
   const { activeSection } = useApp();
 
@@ -33,9 +76,11 @@ function MainContent() {
 
 export default function App() {
   return (
-    <div className="flex h-screen overflow-hidden bg-rose-50/70">
-      <Sidebar />
-      <MainContent />
-    </div>
+    <ErrorBoundary>
+      <div className="flex h-screen overflow-hidden bg-rose-50/70">
+        <Sidebar />
+        <MainContent />
+      </div>
+    </ErrorBoundary>
   );
 }

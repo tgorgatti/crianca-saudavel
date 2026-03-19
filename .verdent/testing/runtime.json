@@ -1,0 +1,11 @@
+{
+  "services": {
+    "frontend": {
+      "pid": 2756,
+      "port": 5173,
+      "url": "http://localhost:5173/crianca-saudavel/",
+      "log_file": ".verdent/testing/logs/frontend.log"
+    }
+  },
+  "updated_at": "2026-03-19T00:00:00Z"
+}

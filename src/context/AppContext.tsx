@@ -8,8 +8,12 @@ import type {
   FoodEntry,
   Vaccine,
   HealthContact,
+  VaccinationCard,
   Section,
+  Language,
 } from '../types';
+import { translations } from '../i18n/translations';
+import type { AppTranslations } from '../i18n/translations';
 
 interface AppContextType {
   childrenList: Child[];
@@ -24,6 +28,7 @@ interface AppContextType {
 
   appointments: Appointment[];
   addAppointment: (apt: Omit<Appointment, 'id'>) => void;
+  updateAppointment: (id: string, updates: Partial<Omit<Appointment, 'id' | 'childId'>>) => void;
   deleteAppointment: (id: string) => void;
 
   medicalFiles: MedicalFile[];
@@ -46,6 +51,14 @@ interface AppContextType {
   healthContacts: HealthContact[];
   addHealthContact: (contact: Omit<HealthContact, 'id'>) => void;
   deleteHealthContact: (id: string) => void;
+
+  vaccinationCards: VaccinationCard[];
+  setVaccinationCard: (card: VaccinationCard) => void;
+  deleteVaccinationCard: (childId: string) => void;
+
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  t: AppTranslations;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -79,6 +92,8 @@ export function AppProvider({ children: reactChildren }: { children: React.React
   const [foodEntries, setFoodEntries] = useState<FoodEntry[]>(() => load('cs_foodEntries', []));
   const [vaccines, setVaccines] = useState<Vaccine[]>(() => load('cs_vaccines', []));
   const [healthContacts, setHealthContacts] = useState<HealthContact[]>(() => load('cs_healthContacts', []));
+  const [vaccinationCards, setVaccinationCards] = useState<VaccinationCard[]>(() => load('cs_vaccinationCards', []));
+  const [language, setLanguageState] = useState<Language>(() => load<Language>('cs_language', 'pt-BR'));
 
   useEffect(() => {
     if (
@@ -99,6 +114,10 @@ export function AppProvider({ children: reactChildren }: { children: React.React
   useEffect(() => { save('cs_foodEntries', foodEntries); }, [foodEntries]);
   useEffect(() => { save('cs_vaccines', vaccines); }, [vaccines]);
   useEffect(() => { save('cs_healthContacts', healthContacts); }, [healthContacts]);
+  useEffect(() => { save('cs_vaccinationCards', vaccinationCards); }, [vaccinationCards]);
+  useEffect(() => { save('cs_language', language); }, [language]);
+
+  const setLanguage = (lang: Language) => setLanguageState(lang);
 
   const addChild = (child: Omit<Child, 'id'>) => {
     if (childrenList.length >= 5) return;
@@ -117,10 +136,13 @@ export function AppProvider({ children: reactChildren }: { children: React.React
     setGrowthRecords((prev) => prev.filter((r) => r.childId !== id));
     setFoodEntries((prev) => prev.filter((e) => e.childId !== id));
     setVaccines((prev) => prev.filter((v) => v.childId !== id));
+    setVaccinationCards((prev) => prev.filter((c) => c.childId !== id));
   };
 
   const addAppointment = (apt: Omit<Appointment, 'id'>) =>
     setAppointments((prev) => [...prev, { ...apt, id: uuidv4() }]);
+  const updateAppointment = (id: string, updates: Partial<Omit<Appointment, 'id' | 'childId'>>) =>
+    setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)));
   const deleteAppointment = (id: string) =>
     setAppointments((prev) => prev.filter((a) => a.id !== id));
 
@@ -151,6 +173,16 @@ export function AppProvider({ children: reactChildren }: { children: React.React
   const deleteHealthContact = (id: string) =>
     setHealthContacts((prev) => prev.filter((c) => c.id !== id));
 
+  const setVaccinationCard = (card: VaccinationCard) =>
+    setVaccinationCards((prev) => {
+      const without = prev.filter((c) => c.childId !== card.childId);
+      return [...without, card];
+    });
+  const deleteVaccinationCard = (childId: string) =>
+    setVaccinationCards((prev) => prev.filter((c) => c.childId !== childId));
+
+  const t = translations[language];
+
   return (
     <AppContext.Provider
       value={{
@@ -164,6 +196,7 @@ export function AppProvider({ children: reactChildren }: { children: React.React
         setActiveSection,
         appointments,
         addAppointment,
+        updateAppointment,
         deleteAppointment,
         medicalFiles,
         addMedicalFile,
@@ -181,6 +214,12 @@ export function AppProvider({ children: reactChildren }: { children: React.React
         healthContacts,
         addHealthContact,
         deleteHealthContact,
+        vaccinationCards,
+        setVaccinationCard,
+        deleteVaccinationCard,
+        language,
+        setLanguage,
+        t,
       }}
     >
       {reactChildren}

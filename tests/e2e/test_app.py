@@ -2,7 +2,7 @@ import re
 import pytest
 from playwright.sync_api import Page, expect
 
-BASE_URL = "http://localhost:5173"
+BASE_URL = "http://localhost:5173/crianca-saudavel/"
 
 
 # ── HELPERS ───────────────────────────────────────────────────────────────────
@@ -33,8 +33,9 @@ class TestPerfil:
     def test_app_carrega_corretamente(self, page: Page):
         page.goto(BASE_URL)
         page.wait_for_load_state("networkidle")
-        # usar .last para pegar o span do sidebar desktop (o mobile fica display:none em md+)
-        expect(page.get_by_text("Criança Saudável").last).to_be_visible()
+        # O título é dividido em dois spans: "Criança" e "Saudável"
+        expect(page.get_by_text("Criança", exact=True).last).to_be_visible()
+        expect(page.get_by_text("Saudável", exact=True).last).to_be_visible()
 
     def test_cadastrar_primeira_crianca(self, page: Page):
         criar_crianca(page, "João Silva", "2022-05-15")
@@ -49,7 +50,7 @@ class TestPerfil:
         criar_crianca(page, "Teste Edit", "2021-03-10")
         page.click("button:has-text('Editar')")
         page.wait_for_timeout(300)
-        page.locator("input.input-field.text-center.font-semibold").fill("Teste Editado")
+        page.locator("input.input-field.font-semibold").fill("Teste Editado")
         page.click("button:has-text('Salvar')")
         page.wait_for_timeout(500)
         expect(page.get_by_role("heading", name="Teste Editado")).to_be_visible()
@@ -142,10 +143,12 @@ class TestAgendaMedica:
         page.locator("button:has-text('Salvar consulta')").click(force=True)
         page.wait_for_timeout(600)
 
+        # Clicar no card abre o modal de edição; excluir via botão do modal
         apt_card = page.locator(".bg-gray-50.rounded-xl").filter(has_text="Clínica Excluir")
-        apt_card.hover()
-        page.wait_for_timeout(300)
-        apt_card.locator("button").click(force=True)
+        apt_card.click()
+        page.wait_for_timeout(400)
+        # botão vermelho de exclusão no modal (bg-red-50 text-red-500)
+        page.locator("button.bg-red-50").click()
         page.wait_for_timeout(500)
 
         expect(page.locator("text=Clínica Excluir")).not_to_be_visible()

@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { Plus, X, Trash2, Phone, Mail, MapPin, Stethoscope, User } from 'lucide-react';
 
 export default function HealthContacts() {
-  const { healthContacts, addHealthContact, deleteHealthContact } = useApp();
+  const { healthContacts, addHealthContact, deleteHealthContact, t } = useApp();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -33,87 +33,87 @@ export default function HealthContacts() {
     <div>
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="section-title">Contatos de Saúde</h1>
-          <p className="section-subtitle">Profissionais e serviços de saúde</p>
+          <h1 className="section-title">{t.contacts.title}</h1>
+          <p className="section-subtitle">{t.contacts.subtitle}</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
           className="btn-primary flex items-center gap-1.5"
         >
           {showForm ? <X size={14} /> : <Plus size={14} />}
-          {showForm ? 'Cancelar' : 'Novo contato'}
+          {showForm ? t.contacts.cancel : t.contacts.newContact}
         </button>
       </div>
 
       {showForm && (
         <div className="card mb-5">
-          <h3 className="font-semibold text-gray-700 mb-4 text-sm">Novo profissional</h3>
+          <h3 className="font-semibold text-gray-700 mb-4 text-sm">{t.contacts.formTitle}</h3>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="label">Nome completo</label>
+                <label className="label">{t.contacts.nameLabel}</label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="input-field"
-                  placeholder="Ex: Dr. Maria Santos"
+                  placeholder={t.contacts.namePlaceholder}
                   required
                 />
               </div>
               <div>
-                <label className="label">Especialidade</label>
+                <label className="label">{t.contacts.specialtyLabel}</label>
                 <input
                   type="text"
                   value={form.specialty}
                   onChange={(e) => setForm({ ...form, specialty: e.target.value })}
                   className="input-field"
-                  placeholder="Ex: Pediatria"
+                  placeholder={t.contacts.specialtyPlaceholder}
                 />
               </div>
               <div>
-                <label className="label">Telefone / WhatsApp</label>
+                <label className="label">{t.contacts.phoneLabel}</label>
                 <input
                   type="tel"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   className="input-field"
-                  placeholder="(11) 99999-9999"
+                  placeholder={t.contacts.phonePlaceholder}
                 />
               </div>
               <div>
-                <label className="label">E-mail</label>
+                <label className="label">{t.contacts.emailLabel}</label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className="input-field"
-                  placeholder="exemplo@clinica.com"
+                  placeholder={t.contacts.emailPlaceholder}
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="label">Endereço / Clínica</label>
+                <label className="label">{t.contacts.addressLabel}</label>
                 <input
                   type="text"
                   value={form.address}
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
                   className="input-field"
-                  placeholder="Ex: Clínica Saúde – Rua das Flores, 123"
+                  placeholder={t.contacts.addressPlaceholder}
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="label">Observações</label>
+                <label className="label">{t.contacts.notesLabel}</label>
                 <textarea
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   className="input-field resize-none"
                   rows={2}
-                  placeholder="Horários de atendimento, convênios, etc."
+                  placeholder={t.contacts.notesPlaceholder}
                 />
               </div>
             </div>
             <div className="flex justify-end">
-              <button type="submit" className="btn-primary">Salvar contato</button>
+              <button type="submit" className="btn-primary">{t.contacts.saveButton}</button>
             </div>
           </form>
         </div>
@@ -122,20 +122,20 @@ export default function HealthContacts() {
       {healthContacts.length === 0 ? (
         <div className="card text-center py-10 text-gray-400">
           <Phone size={40} className="mx-auto mb-2 opacity-30" />
-          <p className="text-sm">Nenhum contato cadastrado</p>
-          <p className="text-xs mt-1 text-gray-300">Os contatos são compartilhados entre todas as crianças</p>
+          <p className="text-sm">{t.contacts.noContacts}</p>
+          <p className="text-xs mt-1 text-gray-300">{t.contacts.noContactsHint}</p>
         </div>
       ) : (
         <>
           <p className="text-xs text-gray-400 mb-3">
-            {healthContacts.length} contato{healthContacts.length !== 1 ? 's' : ''} · compartilhados entre todas as crianças
+            {t.contacts.sharedHint(healthContacts.length)}
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             {healthContacts.map((contact) => (
               <div key={contact.id} className="card group relative">
                 <button
                   onClick={() => {
-                    if (confirm(`Excluir o contato de ${contact.name}?`))
+                    if (confirm(t.contacts.deleteConfirm(contact.name)))
                       deleteHealthContact(contact.id);
                   }}
                   className="absolute top-3 right-3 p-1.5 text-gray-300 hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"

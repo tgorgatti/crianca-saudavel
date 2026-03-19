@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download, Trash2 } from 'lucide-react';
 import type { MedicalFile } from '../types';
+import { useApp } from '../context/AppContext';
 
 interface FileModalProps {
   file: MedicalFile | null;
@@ -10,6 +11,8 @@ interface FileModalProps {
 }
 
 export default function FileModal({ file, onClose, onDelete }: FileModalProps) {
+  const { t } = useApp();
+
   if (!file) return null;
 
   const isImage = file.mimeType.startsWith('image/');
@@ -24,11 +27,14 @@ export default function FileModal({ file, onClose, onDelete }: FileModalProps) {
   };
 
   const handleDelete = () => {
-    if (confirm(`Excluir "${file.name}"?`)) {
+    if (confirm(t.modal.deleteConfirm(file.name))) {
       onDelete(file.id);
       onClose();
     }
   };
+
+  const typeLabel = file.fileType === 'prescription' ? t.modal.prescription : t.modal.exam;
+  const locale = t.common.locale;
 
   return (
     <AnimatePresence>
@@ -52,8 +58,8 @@ export default function FileModal({ file, onClose, onDelete }: FileModalProps) {
             <div className="min-w-0 flex-1">
               <h3 className="font-semibold text-gray-800 truncate">{file.name}</h3>
               <p className="text-xs text-gray-500">
-                {file.fileType === 'prescription' ? 'Receita' : 'Exame'} &bull;{' '}
-                {new Date(file.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                {typeLabel} &bull;{' '}
+                {new Date(file.date + 'T00:00:00').toLocaleDateString(locale)}
               </p>
             </div>
             <div className="flex items-center gap-2 ml-3 shrink-0">
@@ -62,14 +68,14 @@ export default function FileModal({ file, onClose, onDelete }: FileModalProps) {
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-colors text-sm font-medium"
               >
                 <Download size={15} />
-                Baixar
+                {t.modal.download}
               </button>
               <button
                 onClick={handleDelete}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
               >
                 <Trash2 size={15} />
-                Excluir
+                {t.modal.delete}
               </button>
               <button
                 onClick={onClose}
@@ -100,9 +106,9 @@ export default function FileModal({ file, onClose, onDelete }: FileModalProps) {
             {!isImage && !isPdf && (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-400">
                 <span className="text-5xl">📄</span>
-                <p className="text-sm">Pré-visualização não disponível</p>
+                <p className="text-sm">{t.modal.notAvailable}</p>
                 <button onClick={handleDownload} className="btn-primary">
-                  Baixar arquivo
+                  {t.modal.downloadFile}
                 </button>
               </div>
             )}
@@ -110,7 +116,7 @@ export default function FileModal({ file, onClose, onDelete }: FileModalProps) {
           {file.notes && (
             <div className="px-4 pb-4">
               <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
-                <span className="font-medium">Obs:</span> {file.notes}
+                <span className="font-medium">{t.modal.notesLabel}:</span> {file.notes}
               </p>
             </div>
           )}

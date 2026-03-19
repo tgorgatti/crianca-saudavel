@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import type { Section } from '../types';
+import type { Section, Language } from '../types';
 import {
   User, Calendar, FileText, TrendingUp, UtensilsCrossed, Syringe, Phone,
   ChevronLeft, ChevronRight, Plus, Menu, X, Baby,
@@ -8,17 +8,13 @@ import {
 
 const CHILD_COLORS = ['#f472b6', '#a78bfa', '#34d399', '#fb923c', '#38bdf8'];
 
-const NAV_ITEMS: { id: Section; label: string; icon: React.ReactNode }[] = [
-  { id: 'profile', label: 'Perfil', icon: <User size={16} /> },
-  { id: 'agenda', label: 'Agenda Médica', icon: <Calendar size={16} /> },
-  { id: 'prescriptions', label: 'Receitas e Exames', icon: <FileText size={16} /> },
-  { id: 'growth', label: 'Curva de Crescimento', icon: <TrendingUp size={16} /> },
-  { id: 'food', label: 'Rotina Alimentar', icon: <UtensilsCrossed size={16} /> },
-  { id: 'vaccines', label: 'Vacinas', icon: <Syringe size={16} /> },
-  { id: 'contacts', label: 'Contatos de Saúde', icon: <Phone size={16} /> },
+const LANGUAGE_OPTIONS: { code: Language; flag: string; label: string }[] = [
+  { code: 'pt-BR', flag: '🇧🇷', label: 'PT' },
+  { code: 'en', flag: '🇺🇸', label: 'EN' },
+  { code: 'es', flag: '🇪🇸', label: 'ES' },
 ];
 
-function AddChildForm({ onDone }: { onDone: () => void }) {
+function AddChildForm({ onDone, t }: { onDone: () => void; t: ReturnType<typeof useApp>['t'] }) {
   const { addChild } = useApp();
   const [name, setName] = useState('');
   const [birth, setBirth] = useState('');
@@ -37,7 +33,7 @@ function AddChildForm({ onDone }: { onDone: () => void }) {
     <form onSubmit={handleSubmit} className="mt-3 space-y-2">
       <input
         type="text"
-        placeholder="Nome da criança"
+        placeholder={t.sidebar.childNamePlaceholder}
         value={name}
         onChange={(e) => setName(e.target.value)}
         className="w-full px-3 py-2 text-sm rounded-xl bg-white/10 text-white placeholder-violet-300 border border-white/20 focus:outline-none focus:border-white/40 transition-all"
@@ -55,14 +51,14 @@ function AddChildForm({ onDone }: { onDone: () => void }) {
           type="submit"
           className="flex-1 py-2 text-sm rounded-xl bg-pink-500 hover:bg-pink-400 text-white font-semibold transition-all active:scale-95"
         >
-          Adicionar
+          {t.sidebar.addButton}
         </button>
         <button
           type="button"
           onClick={onDone}
           className="flex-1 py-2 text-sm rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95"
         >
-          Cancelar
+          {t.sidebar.cancelButton}
         </button>
       </div>
     </form>
@@ -70,10 +66,20 @@ function AddChildForm({ onDone }: { onDone: () => void }) {
 }
 
 export default function Sidebar() {
-  const { childrenList, selectedChildId, setSelectedChildId, activeSection, setActiveSection } = useApp();
+  const { childrenList, selectedChildId, setSelectedChildId, activeSection, setActiveSection, t, language, setLanguage } = useApp();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+
+  const NAV_ITEMS: { id: Section; label: string; icon: React.ReactNode }[] = [
+    { id: 'profile', label: t.sidebar.nav.profile, icon: <User size={16} /> },
+    { id: 'agenda', label: t.sidebar.nav.agenda, icon: <Calendar size={16} /> },
+    { id: 'prescriptions', label: t.sidebar.nav.prescriptions, icon: <FileText size={16} /> },
+    { id: 'growth', label: t.sidebar.nav.growth, icon: <TrendingUp size={16} /> },
+    { id: 'food', label: t.sidebar.nav.food, icon: <UtensilsCrossed size={16} /> },
+    { id: 'vaccines', label: t.sidebar.nav.vaccines, icon: <Syringe size={16} /> },
+    { id: 'contacts', label: t.sidebar.nav.contacts, icon: <Phone size={16} /> },
+  ];
 
   const navigate = (section: Section) => {
     setActiveSection(section);
@@ -122,7 +128,7 @@ export default function Sidebar() {
 
       {(!collapsed || mobile) && (
         <div className="px-3 py-3 border-b border-white/10">
-          <p className="text-[10px] text-violet-400 uppercase tracking-widest mb-2.5 px-1 font-semibold">Criança</p>
+          <p className="text-[10px] text-violet-400 uppercase tracking-widest mb-2.5 px-1 font-semibold">{t.sidebar.childrenSection}</p>
           <div className="flex flex-wrap gap-1.5">
             {childrenList.map((child, idx) => (
               <button
@@ -155,9 +161,9 @@ export default function Sidebar() {
               </button>
             )}
           </div>
-          {showAddForm && <AddChildForm onDone={() => setShowAddForm(false)} />}
+          {showAddForm && <AddChildForm onDone={() => setShowAddForm(false)} t={t} />}
           {childrenList.length === 0 && !showAddForm && (
-            <p className="text-xs text-violet-400 mt-1 px-1">Nenhuma criança cadastrada</p>
+            <p className="text-xs text-violet-400 mt-1 px-1">{t.sidebar.noChildren}</p>
           )}
         </div>
       )}
@@ -218,11 +224,49 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {(!collapsed || mobile) && (
-        <div className="px-4 py-3 border-t border-white/10">
-          <p className="text-[10px] text-violet-500 text-center">Dados salvos localmente</p>
-        </div>
-      )}
+      <div className={`px-3 py-3 border-t border-white/10 ${collapsed && !mobile ? 'flex flex-col items-center gap-1' : ''}`}>
+        {(!collapsed || mobile) && (
+          <>
+            <p className="text-[10px] text-violet-500 mb-2 font-medium px-1">{t.sidebar.languageLabel}</p>
+            <div className="flex gap-1.5">
+              {LANGUAGE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.code}
+                  onClick={() => setLanguage(opt.code)}
+                  title={opt.label}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all ${
+                    language === opt.code
+                      ? 'bg-white/20 text-white ring-1 ring-white/30'
+                      : 'text-violet-400 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <span>{opt.flag}</span>
+                  <span>{opt.label}</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-violet-500 text-center mt-2">{t.sidebar.savedLocally}</p>
+          </>
+        )}
+        {collapsed && !mobile && (
+          <div className="flex flex-col gap-1">
+            {LANGUAGE_OPTIONS.map((opt) => (
+              <button
+                key={opt.code}
+                onClick={() => setLanguage(opt.code)}
+                title={opt.label}
+                className={`text-sm rounded-lg p-1 transition-all ${
+                  language === opt.code
+                    ? 'bg-white/20 ring-1 ring-white/30'
+                    : 'text-violet-400 hover:bg-white/10'
+                }`}
+              >
+                {opt.flag}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 

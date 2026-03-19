@@ -1,3 +1,5 @@
+export type { Language } from '../i18n/translations';
+
 export interface Child {
   id: string;
   name: string;
@@ -62,6 +64,13 @@ export interface HealthContact {
   email: string;
   address: string;
   notes: string;
+}
+
+export interface VaccinationCard {
+  childId: string;
+  fileData: string;
+  mimeType: string;
+  uploadDate: string;
 }
 
 export type Section =

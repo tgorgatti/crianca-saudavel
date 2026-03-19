@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
+import { compressFile } from '../utils/compress';
 import FileModal from './FileModal';
 import type { MedicalFile } from '../types';
-import { Plus, X, FileText, Image, Upload } from 'lucide-react';
+import { Plus, X, FileText, Upload } from 'lucide-react';
 
-function FileCard({ file, onClick }: { file: MedicalFile; onClick: () => void }) {
+function FileCard({ file, onClick, typeLabel }: { file: MedicalFile; onClick: () => void; typeLabel: string }) {
   const isImage = file.mimeType.startsWith('image/');
   return (
     <button
@@ -37,10 +38,10 @@ function FileCard({ file, onClick }: { file: MedicalFile; onClick: () => void })
                 : 'bg-blue-100 text-blue-600'
             }`}
           >
-            {file.fileType === 'prescription' ? 'Receita' : 'Exame'}
+            {typeLabel}
           </span>
           <span className="text-[10px] text-gray-400">
-            {new Date(file.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+            {new Date(file.date + 'T00:00:00').toLocaleDateString()}
           </span>
         </div>
       </div>
@@ -49,7 +50,7 @@ function FileCard({ file, onClick }: { file: MedicalFile; onClick: () => void })
 }
 
 export default function PrescriptionsExams() {
-  const { medicalFiles, addMedicalFile, deleteMedicalFile, selectedChildId } = useApp();
+  const { medicalFiles, addMedicalFile, deleteMedicalFile, selectedChildId, t } = useApp();
   const [selectedFile, setSelectedFile] = useState<MedicalFile | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
@@ -67,12 +68,16 @@ export default function PrescriptionsExams() {
     .filter((f) => filterType === 'all' || f.fileType === filterType)
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setFileData({ data: reader.result as string, mime: file.type });
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressFile(file);
+      setFileData({ data: compressed.data, mime: compressed.mime });
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Erro ao processar arquivo.');
+      if (fileRef.current) fileRef.current.value = '';
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -96,7 +101,7 @@ export default function PrescriptionsExams() {
   if (!selectedChildId) {
     return (
       <div className="card text-center py-10 text-gray-400">
-        Selecione uma criança para ver os arquivos
+        {t.prescriptions.noChildSelected}
       </div>
     );
   }
@@ -105,49 +110,57 @@ export default function PrescriptionsExams() {
     <div>
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="section-title">Receitas e Exames</h1>
-          <p className="section-subtitle">Documentos médicos e resultados</p>
+          <h1 className="section-title">{t.prescriptions.title}</h1>
+          <p className="section-subtitle">{t.prescriptions.subtitle}</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
           className="btn-primary flex items-center gap-1.5"
         >
           {showForm ? <X size={14} /> : <Plus size={14} />}
-          {showForm ? 'Cancelar' : 'Adicionar'}
+          {showForm ? t.prescriptions.cancel : t.prescriptions.newFile}
         </button>
       </div>
 
       {showForm && (
         <div className="card mb-5">
-          <h3 className="font-semibold text-gray-700 mb-4 text-sm">Novo arquivo</h3>
+          <h3 className="font-semibold text-gray-700 mb-4 text-sm">{t.prescriptions.formTitle}</h3>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="label">Nome do documento</label>
+                <label className="label">{t.prescriptions.nameLabel}</label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="input-field"
-                  placeholder="Ex: Hemograma completo"
+                  placeholder={t.prescriptions.namePlaceholder}
                   required
                 />
               </div>
               <div>
-                <label className="label">Tipo</label>
-                <select
-                  value={form.fileType}
-                  onChange={(e) =>
-                    setForm({ ...form, fileType: e.target.value as 'prescription' | 'exam' })
-                  }
-                  className="input-field"
-                >
-                  <option value="prescription">Receita médica</option>
-                  <option value="exam">Resultado de exame</option>
-                </select>
+                <label className="label">{t.prescriptions.typeLabel}</label>
+                <div className="flex gap-2 mt-1">
+                  {(['prescription', 'exam'] as const).map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setForm({ ...form, fileType: type })}
+                      className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${
+                        form.fileType === type
+                          ? type === 'prescription'
+                            ? 'bg-violet-500 text-white'
+                            : 'bg-blue-500 text-white'
+                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      }`}
+                    >
+                      {type === 'prescription' ? t.prescriptions.prescription : t.prescriptions.exam}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div>
-                <label className="label">Data</label>
+                <label className="label">{t.prescriptions.dateLabel}</label>
                 <input
                   type="date"
                   value={form.date}
@@ -157,52 +170,45 @@ export default function PrescriptionsExams() {
                 />
               </div>
               <div>
-                <label className="label">Arquivo (imagem ou PDF)</label>
-                <div
-                  onClick={() => fileRef.current?.click()}
-                  className={`input-field cursor-pointer flex items-center gap-2 ${
-                    fileData ? 'text-emerald-600' : 'text-gray-400'
-                  }`}
-                >
-                  {fileData ? (
-                    <>
-                      {fileData.mime.startsWith('image/') ? (
-                        <Image size={14} />
-                      ) : (
-                        <FileText size={14} />
-                      )}
-                      <span className="text-sm">Arquivo selecionado</span>
-                    </>
-                  ) : (
-                    <>
-                      <Upload size={14} />
-                      <span className="text-sm">Selecionar arquivo...</span>
-                    </>
-                  )}
-                </div>
+                <label className="label">{t.prescriptions.notesLabel}</label>
                 <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*,application/pdf"
-                  onChange={handleFileSelect}
-                  className="hidden"
-                  required
+                  type="text"
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                  className="input-field"
+                  placeholder={t.prescriptions.notesPlaceholder}
                 />
               </div>
             </div>
             <div>
-              <label className="label">Observações</label>
-              <textarea
-                value={form.notes}
-                onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                className="input-field resize-none"
-                rows={2}
-                placeholder="Anotações sobre o documento..."
+              <label className="label">{t.common.uploadFile}</label>
+              <div
+                onClick={() => fileRef.current?.click()}
+                className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
+                  fileData ? 'border-emerald-300 bg-emerald-50' : 'border-gray-200 hover:border-violet-300 hover:bg-violet-50/30'
+                }`}
+              >
+                {fileData ? (
+                  <p className="text-sm text-emerald-600 font-medium">✓ {t.common.uploadFile}</p>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <Upload size={24} className="text-gray-400" />
+                    <p className="text-sm text-gray-500">{t.prescriptions.selectFileButton}</p>
+                    <p className="text-xs text-gray-400">PDF, JPG, PNG</p>
+                  </div>
+                )}
+              </div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={handleFileSelect}
+                className="hidden"
               />
             </div>
             <div className="flex justify-end">
               <button type="submit" className="btn-primary" disabled={!fileData}>
-                Salvar arquivo
+                {t.prescriptions.saveButton}
               </button>
             </div>
           </form>
@@ -210,33 +216,39 @@ export default function PrescriptionsExams() {
       )}
 
       <div className="flex gap-2 mb-4">
-        {(['all', 'prescription', 'exam'] as const).map((type) => (
+        {([
+          { key: 'all', label: t.prescriptions.filterAll },
+          { key: 'prescription', label: t.prescriptions.filterPrescriptions },
+          { key: 'exam', label: t.prescriptions.filterExams },
+        ] as const).map(({ key, label }) => (
           <button
-            key={type}
-            onClick={() => setFilterType(type)}
+            key={key}
+            onClick={() => setFilterType(key)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              filterType === type
+              filterType === key
                 ? 'bg-pink-500 text-white'
                 : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
             }`}
           >
-            {type === 'all' ? 'Todos' : type === 'prescription' ? 'Receitas' : 'Exames'}
+            {label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-gray-400 self-center">
-          {childFiles.length} documento{childFiles.length !== 1 ? 's' : ''}
-        </span>
       </div>
 
       {childFiles.length === 0 ? (
         <div className="card text-center py-10 text-gray-400">
           <FileText size={40} className="mx-auto mb-2 opacity-30" />
-          <p className="text-sm">Nenhum documento adicionado</p>
+          <p className="text-sm">{t.prescriptions.noFiles}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
           {childFiles.map((file) => (
-            <FileCard key={file.id} file={file} onClick={() => setSelectedFile(file)} />
+            <FileCard
+              key={file.id}
+              file={file}
+              typeLabel={file.fileType === 'prescription' ? t.prescriptions.prescription : t.prescriptions.exam}
+              onClick={() => setSelectedFile(file)}
+            />
           ))}
         </div>
       )}

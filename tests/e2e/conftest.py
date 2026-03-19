@@ -11,7 +11,7 @@ def browser_context_args(browser_context_args):
     return {**browser_context_args, "viewport": {"width": 1280, "height": 720}}
 
 
-@pytest.fixture(autouse=True)
-def set_timeout(page: Page):
+@pytest.fixture
+def page(page: Page):
     page.set_default_timeout(15000)
-    yield
+    yield page
