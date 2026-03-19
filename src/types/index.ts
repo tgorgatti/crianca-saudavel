@@ -21,8 +21,8 @@ export interface MedicalFile {
   childId: string;
   name: string;
   fileType: 'prescription' | 'exam';
-  fileData: string;
-  mimeType: string;
+  fileData: string | null;
+  mimeType: string | null;
   date: string;
   notes: string;
 }

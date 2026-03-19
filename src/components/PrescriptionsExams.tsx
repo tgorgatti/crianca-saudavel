@@ -6,7 +6,8 @@ import type { MedicalFile } from '../types';
 import { Plus, X, FileText, Upload } from 'lucide-react';
 
 function FileCard({ file, onClick, typeLabel }: { file: MedicalFile; onClick: () => void; typeLabel: string }) {
-  const isImage = file.mimeType.startsWith('image/');
+  const isImage = file.mimeType?.startsWith('image/');
+  const isPdf = file.mimeType === 'application/pdf';
   return (
     <button
       onClick={onClick}
@@ -15,16 +16,21 @@ function FileCard({ file, onClick, typeLabel }: { file: MedicalFile; onClick: ()
       <div className="flex items-center justify-center h-28 bg-gray-50 rounded-xl mb-3 overflow-hidden">
         {isImage ? (
           <img
-            src={file.fileData}
+            src={file.fileData!}
             alt={file.name}
             className="w-full h-full object-cover rounded-xl"
           />
-        ) : (
+        ) : isPdf ? (
           <div className="flex flex-col items-center gap-1.5">
             <div className="w-12 h-14 bg-red-50 rounded-lg border border-red-100 flex items-center justify-center">
               <FileText size={28} className="text-red-400" />
             </div>
             <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">PDF</span>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-1.5">
+            <FileText size={32} className="text-gray-300" />
+            <span className="text-[10px] text-gray-400">Sem arquivo</span>
           </div>
         )}
       </div>
@@ -82,13 +88,13 @@ export default function PrescriptionsExams() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedChildId || !fileData || !form.name.trim() || !form.date) return;
+    if (!selectedChildId || !form.name.trim() || !form.date) return;
     addMedicalFile({
       childId: selectedChildId,
       name: form.name.trim(),
       fileType: form.fileType,
-      fileData: fileData.data,
-      mimeType: fileData.mime,
+      fileData: fileData ? fileData.data : null,
+      mimeType: fileData ? fileData.mime : null,
       date: form.date,
       notes: form.notes,
     });
@@ -207,7 +213,7 @@ export default function PrescriptionsExams() {
               />
             </div>
             <div className="flex justify-end">
-              <button type="submit" className="btn-primary" disabled={!fileData}>
+              <button type="submit" className="btn-primary">
                 {t.prescriptions.saveButton}
               </button>
             </div>
