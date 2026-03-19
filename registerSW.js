@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/crianca-saudavel/sw.js', { scope: '/crianca-saudavel/' })})}
