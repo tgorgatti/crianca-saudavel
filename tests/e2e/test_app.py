@@ -102,26 +102,26 @@ class TestAgendaMedica:
 
     def test_adicionar_consulta(self, page: Page):
         self.setup(page)
-        page.click("button:has-text('Nova consulta')")
+        page.click("button:has-text('Novo Registro')")
         page.wait_for_timeout(300)
 
         page.locator("form input[type='date']").fill("2026-04-15")
         page.locator("form input[type='time']").fill("14:30")
         page.fill("input[placeholder='Ex: Dr. João - Clínica Saúde']", "Dr. Pedro Pediatra")
         page.fill("textarea[placeholder*='Sintomas']", "Rotina anual")
-        page.click("button:has-text('Salvar consulta')")
+        page.click("button:has-text('Salvar registro')")
         page.wait_for_timeout(600)
 
         expect(page.locator("text=Dr. Pedro Pediatra").first).to_be_visible()
 
     def test_consulta_aparece_no_calendario(self, page: Page):
         self.setup(page)
-        page.click("button:has-text('Nova consulta')")
+        page.click("button:has-text('Novo Registro')")
         page.wait_for_timeout(300)
         page.locator("form input[type='date']").fill("2026-03-20")
         page.locator("form input[type='time']").fill("09:00")
         page.fill("input[placeholder='Ex: Dr. João - Clínica Saúde']", "Clínica Central")
-        page.click("button:has-text('Salvar consulta')")
+        page.click("button:has-text('Salvar registro')")
         page.wait_for_timeout(600)
 
         # A consulta deve aparecer na lista de consultas abaixo do calendário
@@ -131,7 +131,7 @@ class TestAgendaMedica:
         self.setup(page)
         page.on("dialog", lambda d: d.accept())
 
-        page.click("button:has-text('Nova consulta')")
+        page.click("button:has-text('Novo Registro')")
         page.wait_for_timeout(300)
 
         page.locator("form input[type='date']").fill("2026-05-10")
@@ -140,7 +140,7 @@ class TestAgendaMedica:
         # Tab out of input to ensure focus leaves before clicking submit
         page.keyboard.press("Tab")
         page.wait_for_timeout(200)
-        page.locator("button:has-text('Salvar consulta')").click(force=True)
+        page.locator("button:has-text('Salvar registro')").click(force=True)
         page.wait_for_timeout(600)
 
         # Clicar no card abre o modal de edição; excluir via botão do modal
@@ -152,6 +152,43 @@ class TestAgendaMedica:
         page.wait_for_timeout(500)
 
         expect(page.locator("text=Clínica Excluir")).not_to_be_visible()
+
+
+# ── RECEITAS E EXAMES ─────────────────────────────────────────────────────────
+
+class TestReceitasExames:
+    def setup(self, page: Page):
+        criar_crianca(page, "Criança Receitas", "2021-03-01")
+        nav_click(page, "prescriptions")
+
+    def test_abre_secao_receitas(self, page: Page):
+        self.setup(page)
+        expect(page.locator("h1").filter(has_text=re.compile(r"Receitas|Exames", re.I))).to_be_visible()
+
+    def test_salvar_registro_sem_arquivo(self, page: Page):
+        self.setup(page)
+        page.click("button:has-text('Novo arquivo')")
+        page.wait_for_timeout(300)
+
+        page.fill("input[placeholder='Ex: Receita pediatra 03/2025']", "Consulta pediátrica")
+        page.locator("form input[type='date']").fill("2026-03-10")
+        page.click("button:has-text('Salvar arquivo')")
+        page.wait_for_timeout(600)
+
+        expect(page.get_by_text("Consulta pediátrica")).to_be_visible()
+
+    def test_salvar_registro_com_notas(self, page: Page):
+        self.setup(page)
+        page.click("button:has-text('Novo arquivo')")
+        page.wait_for_timeout(300)
+
+        page.fill("input[placeholder='Ex: Receita pediatra 03/2025']", "Receita Vitamina D")
+        page.locator("form input[type='date']").fill("2026-02-20")
+        page.fill("input[placeholder='Medicamentos, dosagem, instruções...']", "Vitamina para crescimento")
+        page.click("button:has-text('Salvar arquivo')")
+        page.wait_for_timeout(600)
+
+        expect(page.get_by_text("Receita Vitamina D")).to_be_visible()
 
 
 # ── CURVA DE CRESCIMENTO ──────────────────────────────────────────────────────
@@ -450,13 +487,13 @@ class TestPersistencia:
     def test_consulta_persiste_apos_reload(self, page: Page):
         criar_crianca(page, "Criança Agenda Persist", "2020-01-01")
         nav_click(page, "agenda")
-        page.click("button:has-text('Nova consulta')")
+        page.click("button:has-text('Novo Registro')")
         page.wait_for_timeout(300)
 
         page.locator("form input[type='date']").fill("2026-06-01")
         page.locator("form input[type='time']").fill("10:00")
         page.fill("input[placeholder='Ex: Dr. João - Clínica Saúde']", "Dr. Persistente")
-        page.click("button:has-text('Salvar consulta')")
+        page.click("button:has-text('Salvar registro')")
         page.wait_for_timeout(600)
 
         page.reload()
